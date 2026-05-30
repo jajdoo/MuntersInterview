@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\MuntersInterview.Giphy.Manager.Contract\MuntersInterview.Giphy.Manager.Contract.csproj" />
+    <ProjectReference Include="..\MuntersInterview.Giphy.Accessor.Contract\MuntersInterview.Giphy.Accessor.Contract.csproj" />
+    <ProjectReference Include="..\MuntersInterview.Giphy.Cache.Contract\MuntersInterview.Giphy.Cache.Contract.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CSharpFunctionalExtensions" Version="3.7.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.8" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

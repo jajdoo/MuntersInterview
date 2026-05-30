@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\MuntersInterview.Giphy.Manager.Contract\MuntersInterview.Giphy.Manager.Contract.csproj" />
+    <ProjectReference Include="..\MuntersInterview.Giphy.Accessor\MuntersInterview.Giphy.Accessor.csproj" />
+    <ProjectReference Include="..\MuntersInterview.Giphy.Cache\MuntersInterview.Giphy.Cache.csproj" />
+    <ProjectReference Include="..\MuntersInterview.Giphy.Manager\MuntersInterview.Giphy.Manager.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

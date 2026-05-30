@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MuntersInterview.Giphy.Accessor.Contract/MuntersInterview.Giphy.Accessor.Contract.csproj" />
+    <Project Path="src/MuntersInterview.Giphy.Accessor/MuntersInterview.Giphy.Accessor.csproj" />
+    <Project Path="src/MuntersInterview.Giphy.API/MuntersInterview.Giphy.API.csproj" />
+    <Project Path="src/MuntersInterview.Giphy.Cache.Contract/MuntersInterview.Giphy.Cache.Contract.csproj" />
+    <Project Path="src/MuntersInterview.Giphy.Cache/MuntersInterview.Giphy.Cache.csproj" />
+    <Project Path="src/MuntersInterview.Giphy.Manager.Contract/MuntersInterview.Giphy.Manager.Contract.csproj" />
+    <Project Path="src/MuntersInterview.Giphy.Manager/MuntersInterview.Giphy.Manager.csproj" />
+  </Folder>
+</Solution>
