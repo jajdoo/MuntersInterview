@@ -14,14 +14,17 @@ public class GiphyController(IGiphyManager manager) : ControllerBase
         if (string.IsNullOrWhiteSpace(term))
             return BadRequest(new { error = "term is required" });
 
-        var result = await manager.SearchAsync(term, ct);
+        var gifs = await manager.SearchAsync(term, ct);
+        return Ok(new SearchResponse(gifs));
+    }
 
-        return result switch
-        {
-            { IsSuccess: true, Value: var gifs } => Ok(new SearchResponse(gifs)),
-            { Error: var error }                 => StatusCode(StatusCodes.Status500InternalServerError, new { error }),
-        };
+    [HttpGet("trending")]
+    public async Task<IActionResult> GetTrendingAsync(CancellationToken ct)
+    {
+        var gifs = await manager.GetTrendingAsync(ct);
+        return Ok(new TrendingResponse(gifs));
     }
 
     private record SearchResponse(IReadOnlyList<GifItem> Gifs);
+    private record TrendingResponse(IReadOnlyList<GifItem> Gifs);
 }

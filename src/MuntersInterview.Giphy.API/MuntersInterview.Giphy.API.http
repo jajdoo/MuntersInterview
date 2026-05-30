@@ -1,5 +1,10 @@
 @MuntersInterview.Giphy.API_HostAddress = http://localhost:5203
 
+
+GET {{MuntersInterview.Giphy.API_HostAddress}}/api/giphy/trending
+Accept: application/json
+
+
 ### Search GIFs by term
 GET {{MuntersInterview.Giphy.API_HostAddress}}/api/giphy/search?term=cats
 Accept: application/json

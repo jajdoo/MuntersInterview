@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CSharpFunctionalExtensions" Version="3.7.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\MuntersInterview.Giphy.Accessor.Contract\MuntersInterview.Giphy.Accessor.Contract.csproj" />
   </ItemGroup>
 

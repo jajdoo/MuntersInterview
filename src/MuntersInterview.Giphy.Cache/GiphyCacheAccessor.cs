@@ -1,4 +1,3 @@
-using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Caching.Memory;
 using MuntersInterview.Giphy.Accessor.Contract.Models;
 using MuntersInterview.Giphy.Cache.Contract;
@@ -7,26 +6,32 @@ namespace MuntersInterview.Giphy.Cache;
 
 internal sealed class GiphyCacheAccessor(IMemoryCache memoryCache) : IGiphyCacheAccessor
 {
-    public Task<Result<IReadOnlyList<GifItem>>> SearchAsync(string term, CancellationToken ct = default)
+    public Task<IReadOnlyList<GifItem>?> SearchAsync(string term, CancellationToken ct = default)
     {
-        var key = CacheKey(term);
-
-        return memoryCache.TryGetValue(key, out IReadOnlyList<GifItem>? items) && items is not null
-            ? Task.FromResult(Result.Success(items))
-            : Task.FromResult(Result.Failure<IReadOnlyList<GifItem>>("cache-miss"));
+        memoryCache.TryGetValue(CacheKey(term), out IReadOnlyList<GifItem>? items);
+        return Task.FromResult(items);
     }
 
-    public Task<Result> SaveAsync(string term, IReadOnlyList<string> items, TimeSpan ttl, CancellationToken ct = default)
+    public Task SaveAsync(string term, IReadOnlyList<GifItem> items, TimeSpan ttl, CancellationToken ct = default)
     {
-        var options = new MemoryCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = ttl
-        };
-
-        memoryCache.Set(CacheKey(term), items, options);
-
-        return Task.FromResult(Result.Success());
+        var entryOptions = new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = ttl };
+        memoryCache.Set(CacheKey(term), items, entryOptions);
+        return Task.CompletedTask;
     }
 
+    public Task<IReadOnlyList<GifItem>?> GetTrendingAsync(CancellationToken ct = default)
+    {
+        memoryCache.TryGetValue(TrendingCacheKey, out IReadOnlyList<GifItem>? items);
+        return Task.FromResult(items);
+    }
+
+    public Task SaveTrendingAsync(IReadOnlyList<GifItem> items, TimeSpan ttl, CancellationToken ct = default)
+    {
+        var entryOptions = new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = ttl };
+        memoryCache.Set(TrendingCacheKey, items, entryOptions);
+        return Task.CompletedTask;
+    }
+
+    private const string TrendingCacheKey = "giphy:trending";
     private static string CacheKey(string term) => $"giphy:search:{term.ToLowerInvariant()}";
 }

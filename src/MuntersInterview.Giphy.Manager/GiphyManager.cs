@@ -1,4 +1,3 @@
-using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Options;
 using MuntersInterview.Giphy.Accessor.Contract;
 using MuntersInterview.Giphy.Accessor.Contract.Models;
@@ -14,35 +13,93 @@ internal sealed class GiphyManager(
     IOptions<GiphyManagerOptions> options) : IGiphyManager
 {
     private readonly GiphyManagerOptions _options = options.Value;
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
+    private readonly ConcurrentDictionary<string, (SemaphoreSlim Semaphore, int Waiters)> _locks = new();
 
-    public async Task<Result<IReadOnlyList<GifItem>>> SearchAsync(string term, CancellationToken ct = default)
+    public async Task<IReadOnlyList<GifItem>> SearchAsync(string term, CancellationToken ct = default)
     {
         var normalizedTerm = term.Trim().ToLowerInvariant();
 
-        var cacheResult = await cache.SearchAsync(normalizedTerm, ct);
-        if (cacheResult.IsSuccess)
-            return cacheResult;
+        var cached = await cache.SearchAsync(normalizedTerm, ct);
+        if (cached is not null)
+            return cached;
 
-        var semaphore = _locks.GetOrAdd(normalizedTerm, _ => new SemaphoreSlim(1, 1));
+        var semaphore = AcquireSlot(normalizedTerm);
         await semaphore.WaitAsync(ct);
         try
         {
             // Double-check: another waiter may have already populated the cache
-            cacheResult = await cache.SearchAsync(normalizedTerm, ct);
-            if (cacheResult.IsSuccess)
-                return cacheResult;
+            cached = await cache.SearchAsync(normalizedTerm, ct);
+            if (cached is not null)
+                return cached;
 
-            var fetchResult = await accessor.SearchAsync(normalizedTerm, ct);
-            if (fetchResult.IsFailure)
-                return fetchResult;
-
-            await cache.SaveAsync(normalizedTerm, fetchResult.Value, _options.CacheTtl, ct);
-            return fetchResult;
+            var gifs = await accessor.SearchAsync(normalizedTerm, ct);
+            await cache.SaveAsync(normalizedTerm, gifs, _options.CacheTtl, ct);
+            return gifs;
         }
         finally
         {
             semaphore.Release();
+            ReleaseSlot(normalizedTerm);
+        }
+    }
+
+    public async Task<IReadOnlyList<GifItem>> GetTrendingAsync(CancellationToken ct = default)
+    {
+        var cached = await cache.GetTrendingAsync(ct);
+        if (cached is not null)
+            return cached;
+
+        var semaphore = AcquireSlot("trending");
+        await semaphore.WaitAsync(ct);
+        try
+        {
+            cached = await cache.GetTrendingAsync(ct);
+            if (cached is not null)
+                return cached;
+
+            var gifs = await accessor.GetTrendingAsync(ct);
+            await cache.SaveTrendingAsync(gifs, _options.CacheTtl, ct);
+            return gifs;
+        }
+        finally
+        {
+            semaphore.Release();
+            ReleaseSlot("trending");
+        }
+    }
+
+    private SemaphoreSlim AcquireSlot(string key)
+    {
+        while (true)
+        {
+            var entry = _locks.AddOrUpdate(
+                key,
+                _ => (new SemaphoreSlim(1, 1), 1),
+                (_, old) => (old.Semaphore, old.Waiters + 1));
+            return entry.Semaphore;
+        }
+    }
+
+    private void ReleaseSlot(string key)
+    {
+        while (true)
+        {
+            if (!_locks.TryGetValue(key, out var entry))
+                return;
+
+            if (entry.Waiters == 1)
+            {
+                // Last waiter — try to remove the entry atomically
+                if (_locks.TryRemove(new KeyValuePair<string, (SemaphoreSlim, int)>(key, entry)))
+                    return;
+            }
+            else
+            {
+                var updated = (entry.Semaphore, entry.Waiters - 1);
+                if (_locks.TryUpdate(key, updated, entry))
+                    return;
+            }
+            // Lost the race — retry
         }
     }
 }
