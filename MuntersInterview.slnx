@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <File Path="README.md" />
     <Project Path="src/MuntersInterview.Giphy.Accessor.Contract/MuntersInterview.Giphy.Accessor.Contract.csproj" />
     <Project Path="src/MuntersInterview.Giphy.Accessor/MuntersInterview.Giphy.Accessor.csproj" />
     <Project Path="src/MuntersInterview.Giphy.API/MuntersInterview.Giphy.API.csproj" />
